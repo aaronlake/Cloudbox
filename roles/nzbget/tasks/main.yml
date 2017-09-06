@@ -12,6 +12,18 @@
 
 - name: "Set {{nzbget.downloads}} owner"
   shell: "chown -R {{user}}:{{user}} {{nzbget.downloads}}"
+
+- name: Create nzbget intermediate directory
+  file: "path={{nzbget.intermediate}} state=directory mode=0775 owner={{user}} group={{user}}"
+  when: '{{nzbget.intermediate}} != ""'
+
+- name: "Set {{nzbget.intermediate}} permissions"
+  shell: "chmod -R 775 {{nzbget.intermediate}}"
+  when: '{{nzbget.intermediate}} != ""'
+  
+- name: "Set {{nzbget.intermediate}} owner"
+  shell: "chown -R {{user}}:{{user}} {{nzbget.intermediate}}"
+  when: '{{nzbget.intermediate}} != ""'
   
 - name: Check nzbget.conf exists
   stat:
