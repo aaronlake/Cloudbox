@@ -5,6 +5,7 @@
   email: your@email.com
   nzbget:
     downloads: "/home/{{user}}/downloads/nzbget"
+    intermediate: ""
   rutorrent:
     passwd: password321
     downloads: "/home/{{user}}/downloads/rutorrent"
