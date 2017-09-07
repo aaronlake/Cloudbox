@@ -96,7 +96,7 @@
     regexp: '^InterDir\s?='
     line: 'InterDir='
     state: present
-  when: '{{nzbget.intermediate}} == ""'
+  when: nzbget.intermediate == ""
 
 - name: Change scripts directory
   lineinfile:
