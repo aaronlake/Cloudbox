@@ -20,19 +20,11 @@
 - name: "Set {{nzbget.intermediate}} permissions"
   shell: "chmod -R 775 {{nzbget.intermediate}}"
   when: nzbget.intermediate != ""
-<<<<<<< HEAD
-  
-- name: "Set {{nzbget.intermediate}} owner"
-  shell: "chown -R {{user}}:{{user}} {{nzbget.intermediate}}"
-  when: nzbget.intermediate != ""
-  
-=======
 
 - name: "Set {{nzbget.intermediate}} owner"
   shell: "chown -R {{user}}:{{user}} {{nzbget.intermediate}}"
   when: nzbget.intermediate != ""
 
->>>>>>> 0b52725c8050998b30d5e9274a2df9ee1727e5f3
 - name: Check nzbget.conf exists
   stat:
     path: "/opt/nzbget/nzbget.conf"
