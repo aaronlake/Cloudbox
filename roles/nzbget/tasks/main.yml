@@ -15,22 +15,22 @@
 
 - name: Create nzbget intermediate directory
   file: "path={{nzbget.intermediate}} state=directory mode=0775 owner={{user}} group={{user}}"
-  when: '{{nzbget.intermediate}} != ""'
+  when: nzbget.intermediate != ""
 
 - name: "Set {{nzbget.intermediate}} permissions"
   shell: "chmod -R 775 {{nzbget.intermediate}}"
-  when: '{{nzbget.intermediate}} != ""'
+  when: nzbget.intermediate != ""
   
 - name: "Set {{nzbget.intermediate}} owner"
   shell: "chown -R {{user}}:{{user}} {{nzbget.intermediate}}"
-  when: '{{nzbget.intermediate}} != ""'
+  when: nzbget.intermediate != ""
   
 - name: Check nzbget.conf exists
   stat:
     path: "/opt/nzbget/nzbget.conf"
   register: nzbget_conf
 
-- name: Create and start container
+- name: Create and start container with no intermediate volume
   docker_container:
     name: nzbget
     image: linuxserver/nzbget
@@ -47,7 +47,6 @@
       - "/etc/localtime:/etc/localtime:ro"
       - "/opt/nzbget:/config"
       - "{{nzbget.downloads}}:/downloads/nzbget"
-      - "{{nzbget.intermediate| default (omit)}}:/downloads/tmp"
       - "/opt/scripts/nzb:/scripts"
     restart_policy: always
     networks:
@@ -56,6 +55,35 @@
         aliases:
           - nzbget
     state: started
+    when: nzbget.intermediate == ""
+
+- name: Create and start container with intermediate volume
+  docker_container:
+    name: nzbget
+    image: linuxserver/nzbget
+    published_ports:
+      - "127.0.0.1:6789:6789"
+    env:
+      PUID: "{{uid.stdout}}"
+      PGID: "{{gid.stdout}}"
+      VIRTUAL_HOST: "nzbget.{{domain}}"
+      VIRTUAL_PORT: 6789
+      LETSENCRYPT_HOST: "nzbget.{{domain}}"
+      LETSENCRYPT_EMAIL: "{{email}}"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/opt/nzbget:/config"
+      - "{{nzbget.downloads}}:/downloads/nzbget"
+      - "{{nzbget.intermediate}}:/downloads/tmp"
+      - "/opt/scripts/nzb:/scripts"
+    restart_policy: always
+    networks:
+      - name: cloudbox
+        ipv4_address: 172.18.0.9
+        aliases:
+          - nzbget
+    state: started
+    when: nzbget.intermediate != ""
 
 - name: Wait for nzbget.conf to be created
   wait_for:
@@ -88,7 +116,7 @@
     regexp: '^InterDir\s?='
     line: 'InterDir=/downloads/tmp'
     state: present
-  when: '{{nzbget.intermediate}} != ""'
+  when: nzbget.intermediate != ""
 
 - name: Set no intermediate directory
   lineinfile:
@@ -96,7 +124,7 @@
     regexp: '^InterDir\s?='
     line: 'InterDir='
     state: present
-  when: '{{nzbget.intermediate}} == ""'
+  when: nzbget.intermediate == ""
 
 - name: Change scripts directory
   lineinfile:
